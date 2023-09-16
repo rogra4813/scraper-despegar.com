@@ -1,6 +1,12 @@
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+
+from mongo import MongoConnection
+
+
+db_client = MongoConnection().client
+db = db_client.get_database('despegar')
+col = db.get_collection('flights')
 
 driver = webdriver.Chrome()
 driver.get("https://www.us.despegar.com/flights/UIO/AGP?from=SB&di=1-0&reSearch=true")
@@ -12,6 +18,17 @@ for f in flights:
     days = f.find_element(by=By.CLASS_NAME, value="quantity-days").text
     price = f.find_element(by=By.CLASS_NAME, value="price").text
 
+    document = {
+        "airline": airline_name,
+        "depature": departure,
+        "arrival": arrival,
+        "days": days,
+        "price": price
+    }
+
+    col.insert_one(document=document)
+
+
     print(airline_name)
     print(departure)
     print(arrival)
@@ -20,12 +37,4 @@ for f in flights:
     print('=' * 40)
 
 
-
-
-
-
-
-# elem.clear()
-# elem.send_keys("pycon")
-# elem.send_keys(Keys.RETURN)
 driver.close()
